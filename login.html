@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gram Setu | Secure Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <!-- Firebase App (core) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            padding: 25px 0;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 28px;
+            letter-spacing: 1.5px;
+        }
+
+        .user-info {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 14px;
+            display: none;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .graphic-section {
+            flex: 1;
+            min-width: 300px;
+            background: linear-gradient(120deg, rgba(166, 119, 227, 0.7), rgba(110, 142, 251, 0.7));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graphic-content {
+            text-align: center;
+            color: white;
+            z-index: 2;
+        }
+
+        .graphic-content h2 {
+            font-size: 26px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .graphic-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .animated-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 30px;
+        }
+
+        .form-container {
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #777;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #6e8efb;
+            border-bottom: 3px solid #6e8efb;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 14px;
+            color: #777;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #6e8efb;
+            box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(110, 142, 251, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(110, 142, 251, 极速加速器);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, #f5f5f5, #e0e0e0);
+            color: #777;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+            background: #f9f9f9;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            top: 20px;
+            left: 20px;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            bottom: 30px;
+            right: 30px;
+            border-radius: 50%;
+        }
+
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 5px;
+            background: #eee;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .graphic-section {
+                order: -1;
+                min-height: 250px;
+            }
+
+            .user-info {
+                position: static;
+                transform: none;
+                text-align: center;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Gram Setu</h1>
+            <div class="user-info" id="userInfo">
+                <span id="userEmail"></span>
+                <button id="signOutBtn" class="btn-secondary" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Sign Out</button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="graphic-section" id="graphicSection">
+                <div class="graphic-content">
+                    <h2>Join Our Community</h2>
+                    <p>Access exclusive content and connect with other users in our secure network.</p>
+                </div>
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="login">Login</div>
+                        <div class="tab" data-tab="register">Register</div>
+                    </div>
+                    
+                    <form id="loginForm" class="form active">
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="loginEmail" placeholder="Email" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn">Login</button>
+                        
+                        <div class="message" id="loginMessage"></div>
+                    </form>
+                    
+                    <form id="registerForm" class="form">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="registerName" placeholder="Full Name" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="registerEmail" placeholder="Email" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="registerPassword" placeholder="Password" required>
+                            <div class="password-strength">
+                                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn">Create Account</button>
+                        
+                        <div class="message" id="registerMessage"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 Gram Setu. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp_jNJMSK-yXmoePx81L6Xkerie222ja4",
+            authDomain: "gram-setu-6949b.firebaseapp.com",
+            databaseURL: "https://gram-setu-6949b-default-rtdb.firebaseio.com",
+            projectId: "gram-setu-6949b",
+            storageBucket: "gram-setu-6949b.firebasestorage.app",
+            messagingSenderId: "390281394117",
+            appId: "1:390281394117:web:25657d5736de2c89d47dac",
+            measurementId: "G-KJEN4K82EL"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // DOM Elements
+        const tabs = document.querySelectorAll('.tab');
+        const forms = document.querySelectorAll('.form');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginMessage = document.getElementById('loginMessage');
+        const registerMessage = document.getElementById('registerMessage');
+        const graphicSection = document.getElementById('graphicSection');
+        const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+        const registerPassword = document.getElementById('registerPassword');
+        const userInfo = document.getElementById('userInfo');
+        const userEmail = document.getElementById('userEmail');
+        const signOutBtn = document.getElementById('signOutBtn');
+
+        // Check if user intentionally navigated to login page
+        const urlParams = new URLSearchParams(window.location.search);
+        const intentionalAccess = urlParams.get('action') === 'login';
+
+        // Switch between login and register forms
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active form
+                forms.forEach(form => form.classList.remove('active'));
+                document.getElementById(`${tabName}Form`).classList.add('active');
+                
+                // Update graphic section content
+                const graphicContent = document.querySelector('.graphic-content');
+                if (tabName === 'login') {
+                    graphicContent.innerHTML = '<h2>Welcome Back</h2><p>We\'re glad to see you again. Access your personalized dashboard.</p>';
+                } else {
+                    graphicContent.innerHTML = '<h2>Join Our Community</h2><p>Access exclusive content and connect with other users in our secure network.</p>';
+                }
+            });
+        });
+
+        // Password strength indicator
+        registerPassword.addEventListener('input', () => {
+            const password = registerPassword.value;
+            let strength = 0;
+            
+            if (password.length >= 8) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+            
+            // Update strength bar
+            passwordStrengthBar.style.width = `${strength}%`;
+            
+            // Update color based on strength
+            if (strength < 50) {
+                passwordStrengthBar.style.background = '#f44336';
+            } else if (strength < 75) {
+                passwordStrengthBar.style.background = '#ff9800';
+            } else {
+                passwordStrengthBar.style.background = '#4caf50';
+            }
+        });
+
+        // Handle login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            loginMessage.textContent = 'Logging in...';
+            loginMessage.className = 'message';
+            
+            try {
+                // Firebase login
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                loginMessage.textContent = 'Login successful! Redirecting...';
+                loginMessage.classList.add('success');
+                
+                // Store user data in Firestore
+                await db.collection("users").doc(user.uid).set({
+                    lastLogin: new Date(),
+                    email: user.email
+                }, { merge: true });
+                
+                // Redirect to index.html after successful login
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            } catch (error) {
+                loginMessage.textContent = error.message;
+                loginMessage.classList.add('error');
+            }
+        });
+
+        // Handle registration form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                registerMessage.textContent = 'Passwords do not match!';
+                registerMessage.classList.add('error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                registerMessage.textContent = 'Password should be at least 6 characters!';
+                registerMessage.classList.add('error');
+                return;
+            }
+            
+            registerMessage.textContent = 'Creating account...';
+            registerMessage.className = 'message';
+            
+            try {
+                // Firebase registration
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Store additional user data in Firestore
+                await db.collection("users").doc(user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: new Date(),
+                    lastLogin: new Date()
+                });
+                
+                registerMessage.textContent = 'Account created successfully! Redirecting to login...';
+                registerMessage.classList.add('success');
+                
+                // Clear form
+                registerForm.reset();
+                passwordStrengthBar.style.width = '0';
+                
+                // Switch to login tab after a delay
+                setTimeout(() => {
+                    tabs[0].click();
+                }, 2000);
+            } catch (error) {
+                registerMessage.textContent = error.message;
+                registerMessage.classList.add('error');
+            }
+        });
+
+        // Sign out functionality
+        signOutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                userInfo.style.display = 'none';
+            } catch (error) {
+                console.error('Sign out error:', error);
+            }
+        });
+
+        // Create animated circles in the graphic section
+        function createAnimatedCircles() {
+            for (let i = 0; i < 5; i++) {
+                const circle = document.createElement('div');
+                circle.classList.add('animated-circle');
+                
+                const size = Math.random() * 60 + 20;
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                
+                graphicSection.appendChild(circle);
+                
+                // Animate with GSAP
+                gsap.to(circle, {
+                    x: Math.random() * 200 - 100,
+                    y: Math.random() * 200 - 100,
+                    duration: Math.random() * 10 + 10,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+            }
+        }
+
+        // Initialize animations when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createAnimatedCircles();
+            
+            // Animate form container on load
+            gsap.from('.form-container', {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                ease: "back.out(1.2)"
+            });
+            
+            // Animate graphic section on load
+            gsap.from('.graphic-section', {
+                duration: 1,
+                x: -50,
+                opacity: 0,
+                ease: "power2.out"
+            });
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user){
+                    // Only redirect if not intentionally accessing login page
+                    if (!intentionalAccess) {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    userInfo.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
