@@ -102,12 +102,14 @@
 
 ## 👩‍💻 Team
 
+- **Raja Todwal**
 - **Shivam Sharma**
 - **Sanjay Singh**
 - **Nirmal Todwal**
 - **Sahil Bagga**
 
 Contact:  
+- Raja Todwal – rajatodwal76@gmail.com  
 - Shivam Sharma – shivamsharma.it27@gmail.com  
 - Sanjay Singh – sanjaysingh.it27@jecrc.ac.in  
 - Nirmal Todwal – nirmaltodwal566@gmail.com  
